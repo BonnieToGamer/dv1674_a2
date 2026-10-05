@@ -27,13 +27,13 @@ namespace Filter
         Matrix scratch{m.get_x_size(), m.get_y_size()};
         auto dst{m};
         
-        std::vector<double> w(radius + 1, 0.0);
-        Gauss::get_weights(radius, w.data());
-
         for (int x = 0; x < dst.get_x_size(); x++)
         {
             for (int y = 0; y < dst.get_y_size(); y++)
             {
+                std::vector<double> w(radius + 1, 0.0);
+                Gauss::get_weights(radius, w.data());
+
                 // unsigned char Matrix::r(unsigned x, unsigned y) const
                 // {
                 //     return R[y * x_size + x];
@@ -71,6 +71,9 @@ namespace Filter
         {
             for (int y = 0; y < dst.get_y_size(); y++)
             {
+                std::vector<double> w(radius + 1, 0.0);
+                Gauss::get_weights(radius, w.data());
+
                 auto r{w[0] * scratch.r(x, y)}, g{w[0] * scratch.g(x, y)}, b{w[0] * scratch.b(x, y)}, n{w[0]};
 
                 for (int wi = 1; wi <= radius; wi++)
