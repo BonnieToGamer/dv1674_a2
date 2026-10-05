@@ -6,6 +6,7 @@ Author: David Holmqvist <daae19@student.bth.se>
 #include "matrix.hpp"
 #include "ppm.hpp"
 #include <cmath>
+#include <vector>
 
 namespace Filter
 {
@@ -23,16 +24,16 @@ namespace Filter
 
     Matrix blur(Matrix m, const int radius)
     {
-        Matrix scratch{PPM::max_dimension};
+        Matrix scratch{m.get_x_size(), m.get_y_size()};
         auto dst{m};
+        
+        std::vector<double> w(radius + 1, 0.0);
+        Gauss::get_weights(radius, w.data());
 
         for (int x = 0; x < dst.get_x_size(); x++)
         {
             for (int y = 0; y < dst.get_y_size(); y++)
             {
-                double w[Gauss::max_radius]{};
-                Gauss::get_weights(radius, w);
-
                 // unsigned char Matrix::r(unsigned x, unsigned y) const
                 // {
                 //     return R[y * x_size + x];
@@ -42,8 +43,8 @@ namespace Filter
 
                 for (int wi = 1; wi <= radius; wi++)
                 {
-                    auto wc{w[wi]};
-                    auto x2{x - wi};
+                    double wc{w[wi]};
+                    int x2{x - wi};
                     if (x2 >= 0)
                     {
                         r += wc * dst.r(x2, y);
@@ -70,15 +71,13 @@ namespace Filter
         {
             for (int y = 0; y < dst.get_y_size(); y++)
             {
-                double w[Gauss::max_radius]{};
-                Gauss::get_weights(radius, w);
-
                 auto r{w[0] * scratch.r(x, y)}, g{w[0] * scratch.g(x, y)}, b{w[0] * scratch.b(x, y)}, n{w[0]};
 
-                for (auto wi{1}; wi <= radius; wi++)
+                for (int wi = 1; wi <= radius; wi++)
                 {
-                    auto wc{w[wi]};
-                    auto y2{y - wi};
+                    double wc{w[wi]};
+                    int y2{y - wi};
+
                     if (y2 >= 0)
                     {
                         r += wc * scratch.r(x, y2);
@@ -103,5 +102,4 @@ namespace Filter
 
         return dst;
     }
-
 }

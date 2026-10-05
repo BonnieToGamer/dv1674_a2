@@ -39,6 +39,16 @@ Matrix::Matrix(unsigned dimension)
 {
 }
 
+Matrix::Matrix(unsigned x_dimension, unsigned y_dimension)
+    : R { new unsigned char[x_dimension * y_dimension] }
+    , G { new unsigned char[x_dimension * y_dimension] }
+    , B { new unsigned char[x_dimension * y_dimension] }
+    , x_size { x_dimension }
+    , y_size { y_dimension }
+    , color_max { 0 }
+{
+}
+
 Matrix::Matrix(const Matrix& other)
     : R { new unsigned char[other.x_size * other.y_size] }
     , G { new unsigned char[other.x_size * other.y_size] }
