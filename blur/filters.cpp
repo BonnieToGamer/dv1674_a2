@@ -9,12 +9,11 @@ Author: David Holmqvist <daae19@student.bth.se>
 
 namespace Filter
 {
-
     namespace Gauss
     {
         void get_weights(int n, double *weights_out)
         {
-            for (auto i{0}; i <= n; i++)
+            for (int i = 0; i <= n; i++)
             {
                 double x{static_cast<double>(i) * max_x / n};
                 weights_out[i] = exp(-x * x * pi);
@@ -27,9 +26,9 @@ namespace Filter
         Matrix scratch{PPM::max_dimension};
         auto dst{m};
 
-        for (auto x{0}; x < dst.get_x_size(); x++)
+        for (int x = 0; x < dst.get_x_size(); x++)
         {
-            for (auto y{0}; y < dst.get_y_size(); y++)
+            for (int y = 0; y < dst.get_y_size(); y++)
             {
                 double w[Gauss::max_radius]{};
                 Gauss::get_weights(radius, w);
@@ -41,7 +40,7 @@ namespace Filter
 
                 auto r{w[0] * dst.r(x, y)}, g{w[0] * dst.g(x, y)}, b{w[0] * dst.b(x, y)}, n{w[0]};
 
-                for (auto wi{1}; wi <= radius; wi++)
+                for (int wi = 1; wi <= radius; wi++)
                 {
                     auto wc{w[wi]};
                     auto x2{x - wi};
@@ -67,9 +66,9 @@ namespace Filter
             }
         }
 
-        for (auto x{0}; x < dst.get_x_size(); x++)
+        for (int x = 0; x < dst.get_x_size(); x++)
         {
-            for (auto y{0}; y < dst.get_y_size(); y++)
+            for (int y = 0; y < dst.get_y_size(); y++)
             {
                 double w[Gauss::max_radius]{};
                 Gauss::get_weights(radius, w);
