@@ -30,9 +30,9 @@ public:
     unsigned get_y_size() const;
     unsigned get_color_max() const;
 
-    unsigned char const* get_R() const;
-    unsigned char const* get_G() const;
-    unsigned char const* get_B() const;
+    unsigned char* get_R();
+    unsigned char* get_G();
+    unsigned char* get_B();
 
     unsigned char r(unsigned x, unsigned y) const;
     unsigned char g(unsigned x, unsigned y) const;

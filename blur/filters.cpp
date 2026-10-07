@@ -30,9 +30,20 @@ namespace Filter
         std::vector<double> w(radius + 1, 0.0);
         Gauss::get_weights(radius, w.data());
 
-        for (int y = 0; y < dst.get_y_size(); y++)
+        auto dst_r_data = dst.get_R();
+        auto dst_g_data = dst.get_G();
+        auto dst_b_data = dst.get_B();
+        
+        auto scratch_r_data = scratch.get_R();
+        auto scratch_g_data = scratch.get_G();
+        auto scratch_b_data = scratch.get_B();
+        
+        auto size_x = dst.get_x_size();
+        auto size_y = dst.get_y_size();
+        
+        for (int y = 0; y < size_y; y++)
         {
-            for (int x = 0; x < dst.get_x_size(); x++)
+            for (int x = 0; x < size_x; x++)
             {
                 // unsigned char Matrix::r(unsigned x, unsigned y) const
                 // {
@@ -40,30 +51,36 @@ namespace Filter
                 // }
 
                 auto r{w[0] * dst.r(x, y)}, g{w[0] * dst.g(x, y)}, b{w[0] * dst.b(x, y)}, n{w[0]};
-
+                
                 for (int wi = 1; wi <= radius; wi++)
                 {
                     double wc{w[wi]};
                     int x2{x - wi};
+                    
                     if (x2 >= 0)
                     {
-                        r += wc * dst.r(x2, y);
-                        g += wc * dst.g(x2, y);
-                        b += wc * dst.b(x2, y);
+                        const int j = y * size_x + x2;
+                        r += wc * dst_r_data[j];
+                        g += wc * dst_g_data[j];
+                        b += wc * dst_b_data[j];
                         n += wc;
                     }
                     x2 = x + wi;
-                    if (x2 < dst.get_x_size())
+                    
+                    if (x2 < size_x)
                     {
-                        r += wc * dst.r(x2, y);
-                        g += wc * dst.g(x2, y);
-                        b += wc * dst.b(x2, y);
+                        const int j = y * size_x + x2;
+                        r += wc * dst_r_data[j];
+                        g += wc * dst_g_data[j];
+                        b += wc * dst_b_data[j];
                         n += wc;
                     }
                 }
-                scratch.r(x, y) = r / n;
-                scratch.g(x, y) = g / n;
-                scratch.b(x, y) = b / n;
+
+                const auto i = y * size_x + x;
+                scratch_r_data[i] = r / n;
+                scratch_g_data[i] = g / n;
+                scratch_b_data[i] = b / n;
             }
         }
 
@@ -77,26 +94,32 @@ namespace Filter
                 {
                     double wc{w[wi]};
                     int y2{y - wi};
-
+                    
                     if (y2 >= 0)
                     {
-                        r += wc * scratch.r(x, y2);
-                        g += wc * scratch.g(x, y2);
-                        b += wc * scratch.b(x, y2);
+                        const int j = y2 * size_x + x;
+                        r += wc * scratch_r_data[j];
+                        g += wc * scratch_g_data[j];
+                        b += wc * scratch_b_data[j];
                         n += wc;
                     }
                     y2 = y + wi;
-                    if (y2 < dst.get_y_size())
+                    
+                    if (y2 < size_y)
                     {
-                        r += wc * scratch.r(x, y2);
-                        g += wc * scratch.g(x, y2);
-                        b += wc * scratch.b(x, y2);
+                        const int j = y2 * size_x + x;
+                        r += wc * scratch_r_data[j];
+                        g += wc * scratch_g_data[j];
+                        b += wc * scratch_b_data[j];
                         n += wc;
                     }
                 }
-                dst.r(x, y) = r / n;
-                dst.g(x, y) = g / n;
-                dst.b(x, y) = b / n;
+
+                const auto i = y * size_x + x;
+                
+                dst_r_data[i] = r / n;
+                dst_g_data[i] = g / n;
+                dst_b_data[i] = b / n;
             }
         }
 
