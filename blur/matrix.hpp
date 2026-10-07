@@ -23,7 +23,8 @@ public:
     Matrix(unsigned x_dimension, unsigned y_dimension);
     Matrix(const Matrix& other);
     Matrix(unsigned char* R, unsigned char* G, unsigned char* B, unsigned x_size, unsigned y_size, unsigned color_max);
-    Matrix& operator=(const Matrix other);
+    Matrix& operator=(const Matrix& other) noexcept;
+    Matrix& operator=(Matrix&& other) noexcept;
     ~Matrix();
 
     unsigned get_x_size() const;
@@ -40,6 +41,8 @@ public:
     unsigned char& r(unsigned x, unsigned y);
     unsigned char& g(unsigned x, unsigned y);
     unsigned char& b(unsigned x, unsigned y);
+
+    Matrix transpose();
 };
 
 #endif

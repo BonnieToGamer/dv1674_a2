@@ -69,7 +69,7 @@ Matrix::Matrix(const Matrix& other)
     }
 }
 
-Matrix& Matrix::operator=(const Matrix other)
+Matrix& Matrix::operator=(const Matrix& other) noexcept
 {
     if (this == &other) {
         return *this;
@@ -94,6 +94,32 @@ Matrix& Matrix::operator=(const Matrix other)
             g_val = other_g_val;
             b_val = other_b_val;
         }
+    }
+
+    return *this;
+}
+
+Matrix& Matrix::operator=(Matrix&& other) noexcept
+{
+    if (this != &other) 
+    {
+        delete[] R;
+        delete[] G;
+        delete[] B;
+
+        R = other.R;
+        G = other.G;
+        B = other.B;
+
+        x_size = other.x_size;
+        y_size = other.y_size;
+        color_max = other.color_max;
+
+        other.R = nullptr;
+        other.G = nullptr;
+        other.B = nullptr;
+        other.x_size = 0;
+        other.y_size = 0;
     }
 
     return *this;
@@ -175,4 +201,22 @@ unsigned char& Matrix::g(unsigned x, unsigned y)
 unsigned char& Matrix::b(unsigned x, unsigned y)
 {
     return B[y * x_size + x];
+}
+
+Matrix Matrix::transpose() {    
+    Matrix result{y_size, x_size};
+    
+    for(int n = 0; n < x_size * y_size; n++) {
+        int x = n % x_size;
+        int y = n / x_size;
+        
+        const auto src = y * x_size + x;
+        const auto dst = x * y_size + y;
+
+        result.R[dst] = R[src];
+        result.G[dst] = G[src];
+        result.B[dst] = B[src];
+    }
+
+    return result;
 }

@@ -12,11 +12,11 @@ namespace Filter
 {
     namespace Gauss
     {
-        void get_weights(int n, double *weights_out)
+        void get_weights(int n, float *weights_out)
         {
             for (int i = 0; i <= n; i++)
             {
-                double x{static_cast<double>(i) * max_x / n};
+                float x{static_cast<float>(i) * max_x / n};
                 weights_out[i] = exp(-x * x * pi);
             }
         }
@@ -27,7 +27,7 @@ namespace Filter
         Matrix scratch{m.get_x_size(), m.get_y_size()};
         auto dst{m};
         
-        std::vector<double> w(radius + 1, 0.0);
+        std::vector<float> w(radius + 1, 0.0);
         Gauss::get_weights(radius, w.data());
 
         auto dst_r_data = dst.get_R();
@@ -54,7 +54,7 @@ namespace Filter
                 
                 for (int wi = 1; wi <= radius; wi++)
                 {
-                    double wc{w[wi]};
+                    float wc{w[wi]};
                     int x2{x - wi};
                     
                     if (x2 >= 0)
@@ -84,30 +84,43 @@ namespace Filter
             }
         }
 
-        for (int y = 0; y < dst.get_y_size(); y++)
+        // transpose for better cache utilization
+        scratch = scratch.transpose();
+
+        // re-get the pointers
+        scratch_r_data = scratch.get_R();
+        scratch_g_data = scratch.get_G();
+        scratch_b_data = scratch.get_B();
+
+        size_x = scratch.get_x_size();
+        size_y = scratch.get_y_size();
+
+        const auto dst_x_size = dst.get_x_size();
+
+        for (int y = 0; y < size_y; y++)
         {
-            for (int x = 0; x < dst.get_x_size(); x++)
+            for (int x = 0; x < size_x; x++)
             {
                 auto r{w[0] * scratch.r(x, y)}, g{w[0] * scratch.g(x, y)}, b{w[0] * scratch.b(x, y)}, n{w[0]};
 
                 for (int wi = 1; wi <= radius; wi++)
                 {
-                    double wc{w[wi]};
-                    int y2{y - wi};
+                    float wc{w[wi]};
+                    int x2{x - wi};
                     
-                    if (y2 >= 0)
+                    if (x2 >= 0)
                     {
-                        const int j = y2 * size_x + x;
+                        const int j = y * size_x + x2;
                         r += wc * scratch_r_data[j];
                         g += wc * scratch_g_data[j];
                         b += wc * scratch_b_data[j];
                         n += wc;
                     }
-                    y2 = y + wi;
+                    x2 = x + wi;
                     
-                    if (y2 < size_y)
+                    if (x2 < size_x)
                     {
-                        const int j = y2 * size_x + x;
+                        const int j = y * size_x + x2;
                         r += wc * scratch_r_data[j];
                         g += wc * scratch_g_data[j];
                         b += wc * scratch_b_data[j];
@@ -115,7 +128,7 @@ namespace Filter
                     }
                 }
 
-                const auto i = y * size_x + x;
+                const auto i = x * dst_x_size + y;
                 
                 dst_r_data[i] = r / n;
                 dst_g_data[i] = g / n;

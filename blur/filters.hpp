@@ -16,7 +16,7 @@ namespace Filter
         constexpr float max_x{1.33};
         constexpr float pi{3.14159};
 
-        void get_weights(int n, double *weights_out);
+        void get_weights(int n, float *weights_out);
     }
 
     Matrix blur(Matrix m, const int radius);
