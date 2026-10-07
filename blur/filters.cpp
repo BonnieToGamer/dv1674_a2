@@ -30,9 +30,9 @@ namespace Filter
         std::vector<double> w(radius + 1, 0.0);
         Gauss::get_weights(radius, w.data());
 
-        for (int x = 0; x < dst.get_x_size(); x++)
+        for (int y = 0; y < dst.get_y_size(); y++)
         {
-            for (int y = 0; y < dst.get_y_size(); y++)
+            for (int x = 0; x < dst.get_x_size(); x++)
             {
                 // unsigned char Matrix::r(unsigned x, unsigned y) const
                 // {
@@ -67,9 +67,9 @@ namespace Filter
             }
         }
 
-        for (int x = 0; x < dst.get_x_size(); x++)
+        for (int y = 0; y < dst.get_y_size(); y++)
         {
-            for (int y = 0; y < dst.get_y_size(); y++)
+            for (int x = 0; x < dst.get_x_size(); x++)
             {
                 auto r{w[0] * scratch.r(x, y)}, g{w[0] * scratch.g(x, y)}, b{w[0] * scratch.b(x, y)}, n{w[0]};
 
