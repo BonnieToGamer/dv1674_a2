@@ -42,7 +42,7 @@ public:
     unsigned char& g(unsigned x, unsigned y);
     unsigned char& b(unsigned x, unsigned y);
 
-    Matrix transpose();
+    void transpose();
 };
 
 #endif

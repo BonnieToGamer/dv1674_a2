@@ -85,7 +85,7 @@ namespace Filter
         }
 
         // transpose for better cache utilization
-        scratch = scratch.transpose();
+        scratch.transpose();
 
         // re-get the pointers
         scratch_r_data = scratch.get_R();

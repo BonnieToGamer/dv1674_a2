@@ -6,6 +6,7 @@ Author: David Holmqvist <daae19@student.bth.se>
 #include "ppm.hpp"
 #include <fstream>
 #include <stdexcept>
+#include <vector>
 
 Matrix::Matrix(unsigned char* R, unsigned char* G, unsigned char* B, unsigned x_size, unsigned y_size, unsigned color_max)
     : R { R }
@@ -203,20 +204,47 @@ unsigned char& Matrix::b(unsigned x, unsigned y)
     return B[y * x_size + x];
 }
 
-Matrix Matrix::transpose() {    
-    Matrix result{y_size, x_size};
-    
-    for(int n = 0; n < x_size * y_size; n++) {
-        int x = n % x_size;
-        int y = n / x_size;
-        
-        const auto src = y * x_size + x;
-        const auto dst = x * y_size + y;
+void Matrix::transpose() {    
+    const int width = x_size;
+    const int height = y_size;
+    const int size = width * height;
 
-        result.R[dst] = R[src];
-        result.G[dst] = G[src];
-        result.B[dst] = B[src];
+    std::vector<bool> visited(size, false);
+
+    for (int start = 0; start < size; ++start)
+    {
+        if (visited[start])
+            continue;
+
+        int current = start;
+
+        unsigned char held_r = R[current];
+        unsigned char held_g = G[current];
+        unsigned char held_b = B[current];
+
+        while (true)
+        {
+            visited[current] = true;
+
+            int x = current % width;
+            int y = current / width;
+
+            int next = x * height + y;
+
+            if (next == start)
+                break;
+
+            std::swap(R[next], held_r);
+            std::swap(G[next], held_g);
+            std::swap(B[next], held_b);
+
+            current = next;
+        }
+
+        R[start] = held_r;
+        G[start] = held_g;
+        B[start] = held_b;
     }
 
-    return result;
+    std::swap(x_size, y_size);
 }
