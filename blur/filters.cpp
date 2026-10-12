@@ -12,13 +12,35 @@ namespace Filter
 {
     namespace Gauss
     {
-        void get_weights(int n, double *weights_out)
+        std::vector<double> get_weights(int n)
         {
+            std::vector<double>w(n + 1, 0);
             for (int i = 0; i <= n; i++)
             {
                 double x{static_cast<double>(i) * max_x / n};
-                weights_out[i] = exp(-x * x * pi);
+                w[i] = exp(-x * x * pi);
             }
+
+            return w;
+        }
+
+        std::vector<double> get_normals(int size, int radius, const std::vector<double>& weights) {
+            std::vector<double> normals(size);
+            for (int x = 0; x < size; x++) {
+                double sum = weights[0];
+
+                for (int wi = 1; wi <= radius; wi++) {
+                    if (x >= wi)
+                        sum += weights[wi];
+
+                    if (x + wi < size)
+                        sum += weights[wi];
+                }
+
+                normals[x] = 1.0 / sum;
+            }
+
+            return normals;
         }
     }
 
@@ -27,8 +49,9 @@ namespace Filter
         Matrix scratch{m.get_y_size(), m.get_x_size()};
         auto dst{m};
         
-        std::vector<double> w(radius + 1, 0.0);
-        Gauss::get_weights(radius, w.data());
+        auto w = Gauss::get_weights(radius);
+        auto normals_x = Gauss::get_normals(m.get_x_size(), radius, w);
+        auto normals_y = Gauss::get_normals(m.get_y_size(), radius, w);
 
         auto dst_r_data = dst.get_R();
         auto dst_g_data = dst.get_G();
@@ -50,7 +73,7 @@ namespace Filter
                 //     return R[y * x_size + x];
                 // }
 
-                auto r{w[0] * dst.r(x, y)}, g{w[0] * dst.g(x, y)}, b{w[0] * dst.b(x, y)}, n{w[0]};
+                auto r{w[0] * dst.r(x, y)}, g{w[0] * dst.g(x, y)}, b{w[0] * dst.b(x, y)};
                 
                 for (int wi = 1; wi <= radius; wi++)
                 {
@@ -63,7 +86,6 @@ namespace Filter
                         r += wc * dst_r_data[j];
                         g += wc * dst_g_data[j];
                         b += wc * dst_b_data[j];
-                        n += wc;
                     }
                     x2 = x + wi;
                     
@@ -73,14 +95,14 @@ namespace Filter
                         r += wc * dst_r_data[j];
                         g += wc * dst_g_data[j];
                         b += wc * dst_b_data[j];
-                        n += wc;
                     }
                 }
 
                 const auto i = x * size_y + y;
-                scratch_r_data[i] = r / n;
-                scratch_g_data[i] = g / n;
-                scratch_b_data[i] = b / n;
+                const auto normal = normals_x[x];
+                scratch_r_data[i] = r * normal;
+                scratch_g_data[i] = g * normal;
+                scratch_b_data[i] = b * normal;
             }
         }
 
@@ -91,10 +113,11 @@ namespace Filter
 
         for (int y = 0; y < size_y; y++)
         {
+            
             for (int x = 0; x < size_x; x++)
             {
-                auto r{w[0] * scratch.r(x, y)}, g{w[0] * scratch.g(x, y)}, b{w[0] * scratch.b(x, y)}, n{w[0]};
-
+                auto r{w[0] * scratch.r(x, y)}, g{w[0] * scratch.g(x, y)}, b{w[0] * scratch.b(x, y)};
+                
                 for (int wi = 1; wi <= radius; wi++)
                 {
                     double wc{w[wi]};
@@ -106,7 +129,6 @@ namespace Filter
                         r += wc * scratch_r_data[j];
                         g += wc * scratch_g_data[j];
                         b += wc * scratch_b_data[j];
-                        n += wc;
                     }
                     x2 = x + wi;
                     
@@ -116,18 +138,17 @@ namespace Filter
                         r += wc * scratch_r_data[j];
                         g += wc * scratch_g_data[j];
                         b += wc * scratch_b_data[j];
-                        n += wc;
                     }
                 }
-
-                const auto i = x * dst_x_size + y;
                 
-                dst_r_data[i] = r / n;
-                dst_g_data[i] = g / n;
-                dst_b_data[i] = b / n;
+                const auto i = x * dst_x_size + y;
+                const auto normal = normals_y[x];
+                dst_r_data[i] = r * normal;
+                dst_g_data[i] = g * normal;
+                dst_b_data[i] = b * normal;
             }
         }
-
+        
         return dst;
     }
 }
