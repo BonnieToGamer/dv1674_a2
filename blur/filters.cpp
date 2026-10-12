@@ -24,7 +24,7 @@ namespace Filter
 
     Matrix blur(Matrix m, const int radius)
     {
-        Matrix scratch{m.get_x_size(), m.get_y_size()};
+        Matrix scratch{m.get_y_size(), m.get_x_size()};
         auto dst{m};
         
         std::vector<double> w(radius + 1, 0.0);
@@ -77,20 +77,12 @@ namespace Filter
                     }
                 }
 
-                const auto i = y * size_x + x;
+                const auto i = x * size_y + y;
                 scratch_r_data[i] = r / n;
                 scratch_g_data[i] = g / n;
                 scratch_b_data[i] = b / n;
             }
         }
-
-        // transpose for better cache utilization
-        scratch.transpose();
-
-        // re-get the pointers
-        scratch_r_data = scratch.get_R();
-        scratch_g_data = scratch.get_G();
-        scratch_b_data = scratch.get_B();
 
         size_x = scratch.get_x_size();
         size_y = scratch.get_y_size();

@@ -100,32 +100,6 @@ Matrix& Matrix::operator=(const Matrix& other) noexcept
     return *this;
 }
 
-Matrix& Matrix::operator=(Matrix&& other) noexcept
-{
-    if (this != &other) 
-    {
-        delete[] R;
-        delete[] G;
-        delete[] B;
-
-        R = other.R;
-        G = other.G;
-        B = other.B;
-
-        x_size = other.x_size;
-        y_size = other.y_size;
-        color_max = other.color_max;
-
-        other.R = nullptr;
-        other.G = nullptr;
-        other.B = nullptr;
-        other.x_size = 0;
-        other.y_size = 0;
-    }
-
-    return *this;
-}
-
 Matrix::~Matrix()
 {
     if (R) {
@@ -202,49 +176,4 @@ unsigned char& Matrix::g(unsigned x, unsigned y)
 unsigned char& Matrix::b(unsigned x, unsigned y)
 {
     return B[y * x_size + x];
-}
-
-void Matrix::transpose() {    
-    const int width = x_size;
-    const int height = y_size;
-    const int size = width * height;
-
-    std::vector<bool> visited(size, false);
-
-    for (int start = 0; start < size; ++start)
-    {
-        if (visited[start])
-            continue;
-
-        int current = start;
-
-        unsigned char held_r = R[current];
-        unsigned char held_g = G[current];
-        unsigned char held_b = B[current];
-
-        while (true)
-        {
-            visited[current] = true;
-
-            int x = current % width;
-            int y = current / width;
-
-            int next = x * height + y;
-
-            if (next == start)
-                break;
-
-            std::swap(R[next], held_r);
-            std::swap(G[next], held_g);
-            std::swap(B[next], held_b);
-
-            current = next;
-        }
-
-        R[start] = held_r;
-        G[start] = held_g;
-        B[start] = held_b;
-    }
-
-    std::swap(x_size, y_size);
 }
