@@ -12,11 +12,11 @@ namespace Filter
 {
     namespace Gauss
     {
-        void get_weights(int n, float *weights_out)
+        void get_weights(int n, double *weights_out)
         {
             for (int i = 0; i <= n; i++)
             {
-                float x{static_cast<float>(i) * max_x / n};
+                double x{static_cast<double>(i) * max_x / n};
                 weights_out[i] = exp(-x * x * pi);
             }
         }
@@ -27,7 +27,7 @@ namespace Filter
         Matrix scratch{m.get_x_size(), m.get_y_size()};
         auto dst{m};
         
-        std::vector<float> w(radius + 1, 0.0);
+        std::vector<double> w(radius + 1, 0.0);
         Gauss::get_weights(radius, w.data());
 
         auto dst_r_data = dst.get_R();
@@ -54,7 +54,7 @@ namespace Filter
                 
                 for (int wi = 1; wi <= radius; wi++)
                 {
-                    float wc{w[wi]};
+                    double wc{w[wi]};
                     int x2{x - wi};
                     
                     if (x2 >= 0)
@@ -105,7 +105,7 @@ namespace Filter
 
                 for (int wi = 1; wi <= radius; wi++)
                 {
-                    float wc{w[wi]};
+                    double wc{w[wi]};
                     int x2{x - wi};
                     
                     if (x2 >= 0)
