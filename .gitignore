@@ -4,3 +4,4 @@ blur/blur
 blur/blur_par
 blur/benchmark_results.csv
 blur/benchmark_output
+benchmarks/
