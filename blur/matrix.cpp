@@ -6,7 +6,6 @@ Author: David Holmqvist <daae19@student.bth.se>
 #include "ppm.hpp"
 #include <fstream>
 #include <stdexcept>
-#include <vector>
 
 Matrix::Matrix(unsigned char* R, unsigned char* G, unsigned char* B, unsigned x_size, unsigned y_size, unsigned color_max)
     : R { R }
@@ -40,16 +39,6 @@ Matrix::Matrix(unsigned dimension)
 {
 }
 
-Matrix::Matrix(unsigned x_dimension, unsigned y_dimension)
-    : R { new unsigned char[x_dimension * y_dimension] }
-    , G { new unsigned char[x_dimension * y_dimension] }
-    , B { new unsigned char[x_dimension * y_dimension] }
-    , x_size { x_dimension }
-    , y_size { y_dimension }
-    , color_max { 0 }
-{
-}
-
 Matrix::Matrix(const Matrix& other)
     : R { new unsigned char[other.x_size * other.y_size] }
     , G { new unsigned char[other.x_size * other.y_size] }
@@ -70,7 +59,7 @@ Matrix::Matrix(const Matrix& other)
     }
 }
 
-Matrix& Matrix::operator=(const Matrix& other) noexcept
+Matrix& Matrix::operator=(const Matrix other)
 {
     if (this == &other) {
         return *this;
@@ -133,17 +122,17 @@ unsigned Matrix::get_color_max() const
     return color_max;
 }
 
-unsigned char* Matrix::get_R()
+unsigned char const* Matrix::get_R() const
 {
     return R;
 }
 
-unsigned char* Matrix::get_G()
+unsigned char const* Matrix::get_G() const
 {
     return G;
 }
 
-unsigned char* Matrix::get_B()
+unsigned char const* Matrix::get_B() const
 {
     return B;
 }

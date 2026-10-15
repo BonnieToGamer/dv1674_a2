@@ -1,7 +1,7 @@
 custom/
 *.o
-blur/blur
-blur/blur_par
+*/blur
+*/blur_par
 blur/benchmark_results.csv
 blur/benchmark_output
 benchmarks/

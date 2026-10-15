@@ -43,38 +43,6 @@ namespace Filter
 
             return normals;
         }
-
-        struct NormalsThreadedWorker
-        {
-            const std::vector<double>* weights;
-            std::vector<double>* normals;
-            int start;
-            int end;
-            int size;
-            int radius;
-        };
-        
-        void* get_normals_threaded(void* arg) {
-            auto& worker = *static_cast<NormalsThreadedWorker*>(arg);
-            auto& weights = *worker.weights;
-            auto& normals = *worker.normals;
-            
-            for (int x = worker.start; x < worker.end; x++) {
-                double sum = weights[0];
-
-                for (int wi = 1; wi <= worker.radius; wi++) {
-                    if (x >= wi)
-                        sum += weights[wi];
-
-                    if (x + wi < worker.size)
-                        sum += weights[wi];
-                }
-
-                normals[x] = 1.0 / sum;
-            }
-
-            return nullptr;
-        }
     }
 
     struct BlurSectionArgs 
@@ -179,98 +147,14 @@ namespace Filter
         return workers;
     }
 
-    void run_threaded_normals(const std::vector<double>& weights, std::vector<double>& x_normals, std::vector<double>& y_normals, int num_threads, int radius, int x_size, int y_size)
-    {
-        std::vector<pthread_t> threads(num_threads);
-        std::vector<Gauss::NormalsThreadedWorker> workers(num_threads);
-
-        x_normals.resize(x_size);
-        y_normals.resize(y_size);
-
-        // x normals
-        const auto x_threads = num_threads / 2;
-        const auto x_base_size = x_size / x_threads;
-        const auto x_remainder = x_size % x_threads;
-        
-        int start = 0;
-        int worker_index = 0;
-        
-        for (int i = 0; i < x_threads; i++) 
-        {
-            auto size = x_base_size + ((i < x_remainder) ? 1 : 0);
-            auto end = start + size;
-            
-            auto& args = workers[worker_index];
-
-            args = {
-                .weights = &weights,
-                .normals = &x_normals,
-                .start = start,
-                .end = end,
-                .size = x_size,
-                .radius = radius,
-            };
-
-            start = end;
-            
-            auto& thread = threads[worker_index];  
-            pthread_create(&thread, nullptr, Gauss::get_normals_threaded, &args);
-            worker_index++;
-        }
-
-        start = 0;
-
-        // y normals
-        const auto y_threads = num_threads - x_threads;
-        const auto y_base_size = y_size / y_threads;
-        const auto y_remainder = y_size % y_threads;
-        
-        for (int i = 0; i < y_threads; i++) 
-        {            
-            auto size = y_base_size + ((i < y_remainder) ? 1 : 0);
-            auto end = start + size;
-            
-            auto& args = workers[worker_index];
-            
-            args = {
-                .weights = &weights,
-                .normals = &y_normals,
-                .start = start,
-                .end = end,
-                .size = y_size,
-                .radius = radius,
-            };
-
-            start = end;
-            
-            auto& thread = threads[worker_index];  
-            pthread_create(&thread, nullptr, Gauss::get_normals_threaded, &args);
-            worker_index++;
-        }
-
-        for (const auto& thread : threads)
-            pthread_join(thread, nullptr);
-    }
-
     Matrix blur(Matrix m, const int radius, const int num_threads)
     {        
         Matrix scratch{m.get_y_size(), m.get_x_size()};
         auto dst{m};
         
-        std::vector<double> w;
-        std::vector<double> normals_x;
-        std::vector<double> normals_y;
-
-        w = Gauss::get_weights(radius);
-        
-        if (num_threads < 2) 
-        {
-            normals_x = Gauss::get_normals(m.get_x_size(), radius, w);
-            normals_y = Gauss::get_normals(m.get_y_size(), radius, w);
-        }
-
-        else
-            run_threaded_normals(w, normals_x, normals_y, num_threads, radius, m.get_x_size(), m.get_y_size());
+        auto w = Gauss::get_weights(radius);
+        auto normals_x = Gauss::get_normals(m.get_x_size(), radius, w);
+        auto normals_y = Gauss::get_normals(m.get_y_size(), radius, w);
 
         auto dst_r_data = dst.get_R();
         auto dst_g_data = dst.get_G();

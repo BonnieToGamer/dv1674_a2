@@ -3,7 +3,6 @@ Author: David Holmqvist <daae19@student.bth.se>
 */
 
 #include "matrix.hpp"
-#include <vector>
 
 #if !defined(FILTERS_HPP)
 #define FILTERS_HPP
@@ -17,8 +16,7 @@ namespace Filter
         constexpr float max_x{1.33};
         constexpr float pi{3.14159};
 
-        std::vector<double> get_weights(int n);
-        std::vector<double> get_normals(int size, int radius, const std::vector<double>& weights);
+        void get_weights(int n, double *weights_out);
     }
 
     Matrix blur(Matrix m, const int radius);

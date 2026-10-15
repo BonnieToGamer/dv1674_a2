@@ -1,0 +1,2 @@
+input,radius,threads,wall_time_sec,user_time_sec,sys_time_sec,cpu_percent,peak_memory_kb,exit_code
+"./data/im1.ppm",15,4,0.24,0.23,0.00,98,11960,0
